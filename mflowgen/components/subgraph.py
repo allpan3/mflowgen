@@ -68,16 +68,23 @@ class Subgraph(Step):
     for key, value in kwargs.items():
         kwargs_cmd.append(f"export {key}={value}")
 
+    # Update the param values with kwargs
+    step_param_dict.update(kwargs)
+
     # Generate run command that passes graph arg for each param
     run_cmd = f"mflowgen run --subgraph --design {construct_path} --graph-kwargs {{{{\""
-    for param in step_param_dict:
-      run_cmd += f"'{param}':'${param}',"
+    for param, value in step_param_dict.items():
+        # If the value is a string the value needs to be in quotes
+        if isinstance(value, str):
+            run_cmd += f"'{param}':'{value}',"
+        else:
+            run_cmd += f"'{param}':{value},"
+
     # Replace last comma with close bracket for kwarg dict
     if run_cmd[-1] == ',':
       run_cmd = run_cmd[:-1]
 
     run_cmd += '\"}}'
-
 
     # Generate step data
 
